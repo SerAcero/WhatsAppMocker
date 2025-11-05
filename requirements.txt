@@ -1,0 +1,15 @@
+# Core ML/LLM dependencies
+torch==2.1.0
+transformers==4.35.0
+peft==0.6.0
+accelerate==0.24.0
+
+# Data processing
+datasets==2.14.0
+
+# Utilities
+tqdm
+numpy<2.0.0
+scipy
+
+bitsandbytes>=0.41.0
