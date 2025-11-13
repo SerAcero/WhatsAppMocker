@@ -55,14 +55,14 @@ def parse_whatsapp_export(
         for fmt in candidates:
             try:
                 return datetime.strptime(combined, fmt).isoformat()
-            except:
+            except Exception:
                 pass
         return combined  # fallback
 
     # Parse messages
     messages = []
     senders = set()
-
+    skipped_system_msgs = 0
     print(f"Parsing {input_file}...")
 
     with open(input_file, encoding="utf-8") as f:
@@ -77,8 +77,14 @@ def parse_whatsapp_export(
                 # New message
                 d = match.groupdict()
                 dt = parse_dt(d["date"], d["time"])
-                sender = d.get("sender") or "SYSTEM"
+                sender = d.get("sender")
                 text = d["msg"].strip()
+
+                # Skip system messages (no sender in export)
+                if sender is None or sender.strip().upper() == "SYSTEM":
+                    skipped_system_msgs += 1
+                    current_msg = None
+                    continue
 
                 current_msg = {
                     "id": str(uuid.uuid4()),
@@ -94,6 +100,7 @@ def parse_whatsapp_export(
                     current_msg["text"] += "\n" + line.strip()
 
     print(f"Parsed {len(messages)} messages from {len(senders)} senders")
+    print(f"Skipped {skipped_system_msgs} system messages")
 
     # Normalize sender names
     for msg in messages:
@@ -127,6 +134,7 @@ def parse_whatsapp_export(
         print(
             f"{name:20} | {stats['n_messages']:4} msgs | "
             f"avg {stats['avg_words']:.1f} words | "
+            f"median {stats['median_words']:.1f} words | "
             f"{stats['emoji_count_total']:3} emojis"
         )
     print("=" * 60)
@@ -183,6 +191,12 @@ def analyze_personas(messages):
         )
         common_words = [w for w, _ in word_freq.most_common(10)]
 
+        if len(texts) < 100:
+            print(
+                f"⚠️  Warning: Persona '{sender}' has only {len(texts)} messages. Discarding"
+            )
+            continue
+
         persona_stats[sender] = {
             "name": sender,
             "n_messages": len(texts),
@@ -213,11 +227,18 @@ if __name__ == "__main__":
         "Fer Movil": "Fer",
         "SYSTEM": "SYSTEM",
         "Ernes Mvl": "Ernes",
+        "Manu Mvl": "Manu",
         "Coronga": "Cora",
         "Jose A": "Jose",
+        "Josua Dutch": "Jose",
+        "Josua Pt": "Jose",
         "Héctor Dutch": "Héctor",
         "Juan 1 England": "Juan L.",
         "Violeta Rami": "Violeta",
+        "Violeta Velasco Mx2": "Violeta",
+        "Vio Argentina": "Violeta",
+        "Violeta Perú": "Violeta",
+        "+52 56 2181 1630": "Violeta",
         "Sara SS SS SS SS SS SS J2": "Sara (J2)",
     }
 
