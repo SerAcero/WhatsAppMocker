@@ -143,7 +143,7 @@ class WhatsAppGenerator:
         prompt = format_instruction(
             history_text, dummy_completion, self.personas, for_training=False
         )
-        print(f"Formatted prompt:\n{prompt}\n{'-'*40}\n")
+        # print(f"Formatted prompt:\n{prompt}\n{'-'*40}\n")
 
         # Tokenize
         inputs = self.tokenizer(

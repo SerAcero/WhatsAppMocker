@@ -40,6 +40,8 @@ class ModelConfig:
     batch_size: int = Config.BATCH_SIZE
     gradient_accumulation_steps: int = Config.GRADIENT_ACCUMULATION_STEPS
     learning_rate: float = Config.LEARNING_RATE
+    lr_scheduler_type: str = Config.LR_SCHEDULER_TYPE
+    warmup_ratio: float = Config.WARMUP_RATIO
     max_seq_length: int = Config.MAX_SEQ_LENGTH
     window_size: int = Config.WINDOW_SIZE
 
@@ -308,6 +310,31 @@ class WhatsAppTrainer:
 
         logger.info(f"Train size: {len(train_dataset)}, Eval size: {len(eval_dataset)}")
 
+        # Calculate steps per epoch
+        effective_batch_size = (
+            self.config.batch_size * self.config.gradient_accumulation_steps
+        )
+        steps_per_epoch = len(train_dataset) // effective_batch_size
+        logger.info(
+            f"Steps per epoch: {steps_per_epoch} "
+            f"(batch_size={self.config.batch_size}, "
+            f"grad_accum={self.config.gradient_accumulation_steps})"
+        )
+
+        # Set eval/save steps as percentage of epoch (e.g., 20% of epoch)
+        logging_percentage = 0.05
+        eval_percentage = 0.5
+        save_percentage = 0.4
+
+        logging_steps = max(1, int(steps_per_epoch * logging_percentage))
+        eval_steps = max(1, int(steps_per_epoch * eval_percentage))
+        save_steps = max(1, int(steps_per_epoch * save_percentage))
+
+        logger.info(
+            f"Eval every {eval_steps} steps ({eval_percentage*100:.0f}% of epoch), "
+            f"Save every {save_steps} steps ({save_percentage*100:.0f}% of epoch)"
+        )
+
         # Load model
         logger.info(f"Loading model {self.config.base_model}")
         model = AutoModelForCausalLM.from_pretrained(
@@ -351,18 +378,18 @@ class WhatsAppTrainer:
             per_device_eval_batch_size=self.config.batch_size,
             gradient_accumulation_steps=self.config.gradient_accumulation_steps,
             learning_rate=self.config.learning_rate,
-            logging_steps=10,
+            lr_scheduler_type=self.config.lr_scheduler_type,
+            warmup_steps=max(10, int(steps_per_epoch * self.config.warmup_ratio)),
+            # warmup_steps=10,
+            logging_steps=logging_steps,
+            # Disable eval in profile mode
             # evaluation_strategy="epoch",
-            evaluation_strategy=(
-                "no" if profile_only else "steps"
-            ),  # Disable eval in profile mode
-            eval_steps=60,
-            save_steps=(
-                60 if not profile_only else 999999
-            ),  # Don't save during profiling
+            evaluation_strategy=("no" if profile_only else "steps"),
+            eval_steps=eval_steps if not profile_only else 999999,
+            # Don't save during profiling
+            save_steps=(save_steps if not profile_only else 999999),
             save_total_limit=2,
             report_to="none",
-            warmup_steps=10,
             weight_decay=0.01,
             remove_unused_columns=False,  # Important!
             fp16=self.config.use_fp16,

@@ -37,6 +37,8 @@ class GPT2Config(BaseConfig):
     BATCH_SIZE = 5
     GRADIENT_ACCUMULATION_STEPS = 2
     LEARNING_RATE = 5e-4
+    LR_SCHEDULER_TYPE = "constant_with_warmup"
+    WARMUP_RATIO = 0.05
     # Shorter sequence length significantly reduces memory usage
     MAX_SEQ_LENGTH = 128 * 2  # GPT-2 works well with shorter context
     WINDOW_SIZE = 6
