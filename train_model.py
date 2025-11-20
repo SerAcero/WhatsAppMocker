@@ -383,8 +383,8 @@ class WhatsAppTrainer:
             # warmup_steps=10,
             logging_steps=logging_steps,
             # Disable eval in profile mode
-            # evaluation_strategy="epoch",
-            evaluation_strategy=("no" if profile_only else "steps"),
+            # eval_strategy="epoch",
+            eval_strategy=("no" if profile_only else "steps"),
             eval_steps=eval_steps if not profile_only else 999999,
             # Don't save during profiling
             save_steps=(save_steps if not profile_only else 999999),
