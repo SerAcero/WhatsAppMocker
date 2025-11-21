@@ -289,7 +289,7 @@ class WhatsAppTrainer:
 
         return tokenized_dataset
 
-    def train(self, profile_only: bool = False):
+    def train(self, profile_only: bool = False, resume_from_checkpoint=False):
         """Train the model using LoRA.
 
         Args:
@@ -401,7 +401,7 @@ class WhatsAppTrainer:
             resume_from_checkpoint=os.path.join(self.config.output_dir,"checkpoint-966"),  # Path to your checkpoint
         )
 
-        print(training_args)
+        #print(training_args)
 
         # Trainer
         trainer = Trainer(
@@ -461,7 +461,7 @@ class WhatsAppTrainer:
 
         # Train!
         logger.info("Starting training...")
-        trainer.train()
+        trainer.train(resume_from_checkpoint=resume_from_checkpoint)
 
         # Save model
         logger.info(f"Saving model to {self.config.output_dir}")
