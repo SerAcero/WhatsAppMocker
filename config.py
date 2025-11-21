@@ -15,10 +15,15 @@ def is_colab():
 class BaseConfig:
     """Base configuration - shared across all models."""
 
-    # === Data Paths ===
-    RAW_CHAT_DIR = "data"
-    PROCESSED_DIR = "data/processed"
-    MODEL_DIR = "D:\\WhatsappMocker\\models"
+    if is_colab():
+        # Colab paths
+        MODEL_DIR = "/content/drive/MyDrive/WhatsAppMocker/models"
+        PROCESSED_DIR = "/content/drive/MyDrive/WhatsAppMocker/data/processed"        
+    else:
+        # === Data Paths ===
+        RAW_CHAT_DIR = "data"
+        PROCESSED_DIR = "data/processed"
+        MODEL_DIR = "D:\\WhatsappMocker\\models"
 
     # === Generation Settings ===
     TEMPERATURE = 0.8

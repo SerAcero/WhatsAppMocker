@@ -395,9 +395,13 @@ class WhatsAppTrainer:
             fp16=self.config.use_fp16,
             gradient_checkpointing=self.config.gradient_checkpointing,
             ## PROBABLY WINDOWS SPECIFIC. REMOVE FOR LINUX
-            dataloader_pin_memory=False,  # Skip expensive cudaHostAlloc (Copilot suggestion, I do not know what I am doing)
-            dataloader_num_workers=0,  # No multiprocessing overhead on Windows
+            #dataloader_pin_memory=False,  # Skip expensive cudaHostAlloc (Copilot suggestion, I do not know what I am doing)
+            #dataloader_num_workers=0,  # No multiprocessing overhead on Windows
+            ##
+            resume_from_checkpoint=os.path.join(self.config.output_dir,"checkpoint-966"),  # Path to your checkpoint
         )
+
+        print(training_args)
 
         # Trainer
         trainer = Trainer(
