@@ -43,22 +43,40 @@ class GPT2Config(BaseConfig):
     BASE_MODEL = "gpt2"
     MODEL_OUTPUT_DIR = f"{BaseConfig.MODEL_DIR}/gpt2"
 
-    # Training (auto-adjust for Colab T4 vs local GTX 960M)
-    NUM_EPOCHS = 5 if is_colab() else 1
-    BATCH_SIZE = 32 if is_colab() else 5
-    GRADIENT_ACCUMULATION_STEPS = 2
-    LEARNING_RATE = 5e-4
-    LR_SCHEDULER_TYPE = "cosine" if is_colab() else "constant_with_warmup"
-    WARMUP_RATIO = 0.1 if is_colab() else 0.05
-    MAX_SEQ_LENGTH = 256
-    WINDOW_SIZE = 6
-    GRADIENT_CHECKPOINTING = True
+    if is_colab():
+        # Training (for Colab T4)
+        NUM_EPOCHS = 7
+        BATCH_SIZE = 32
+        GRADIENT_ACCUMULATION_STEPS = 2
+        LEARNING_RATE = 8e-4
+        LR_SCHEDULER_TYPE = "cosine_with_restarts"
+        WARMUP_RATIO = 0.1
+        MAX_SEQ_LENGTH = 128*3
+        WINDOW_SIZE = 8
+        GRADIENT_CHECKPOINTING = True
 
-    # LoRA (bigger capacity for Colab)
-    LORA_R = 16 if is_colab() else 8
-    LORA_ALPHA = 32 if is_colab() else 16
-    LORA_DROPOUT = 0.05
-    LORA_TARGET_MODULES = ["c_attn", "c_proj"]
+        # LoRA (bigger capacity for Colab)
+        LORA_R = 32
+        LORA_ALPHA = 64
+        LORA_DROPOUT = 0.05
+        LORA_TARGET_MODULES = ["c_attn", "c_proj"]
+    else:
+        # Training (auto-adjust for Colab T4 vs local GTX 960M)
+        NUM_EPOCHS = 1
+        BATCH_SIZE = 5
+        GRADIENT_ACCUMULATION_STEPS = 2
+        LEARNING_RATE = 5e-4
+        LR_SCHEDULER_TYPE = "constant_with_warmup"
+        WARMUP_RATIO = 0.05
+        MAX_SEQ_LENGTH = 256
+        WINDOW_SIZE = 6
+        GRADIENT_CHECKPOINTING = True
+
+        # LoRA (bigger capacity for Colab)
+        LORA_R = 8
+        LORA_ALPHA = 16
+        LORA_DROPOUT = 0.05
+        LORA_TARGET_MODULES = ["c_attn", "c_proj"]
 
     # Hardware
     # Try FP16 to reduce memory; if you see instability/NaNs on older GPUs,
