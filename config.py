@@ -3,10 +3,12 @@ Configuration file for WhatsApp Mocker.
 Adjust these settings based on your needs and hardware.
 """
 
+
 def is_colab():
     """Detect if running in Google Colab."""
     try:
         import google.colab
+
         return True
     except ImportError:
         return False
@@ -18,7 +20,7 @@ class BaseConfig:
     if is_colab():
         # Colab paths
         MODEL_DIR = "/content/drive/MyDrive/WhatsAppMocker/models"
-        PROCESSED_DIR = "/content/drive/MyDrive/WhatsAppMocker/data/processed"        
+        PROCESSED_DIR = "/content/drive/MyDrive/WhatsAppMocker/data/processed"
     else:
         # === Data Paths ===
         RAW_CHAT_DIR = "data"
@@ -49,9 +51,9 @@ class GPT2Config(BaseConfig):
         BATCH_SIZE = 32
         GRADIENT_ACCUMULATION_STEPS = 2
         LEARNING_RATE = 8e-4
-        LR_SCHEDULER_TYPE = "cosine_with_restarts"
-        WARMUP_RATIO = 0.1
-        MAX_SEQ_LENGTH = 128*3
+        LR_SCHEDULER_TYPE = "cosine"
+        WARMUP_RATIO = 0.05
+        MAX_SEQ_LENGTH = 128 * 3
         WINDOW_SIZE = 8
         GRADIENT_CHECKPOINTING = True
 
@@ -59,7 +61,7 @@ class GPT2Config(BaseConfig):
         LORA_R = 32
         LORA_ALPHA = 64
         LORA_DROPOUT = 0.05
-        LORA_TARGET_MODULES = ["c_attn", "c_proj"]
+        LORA_TARGET_MODULES = ["c_attn", "c_proj", "c_fc"]
     else:
         # Training (auto-adjust for Colab T4 vs local GTX 960M)
         NUM_EPOCHS = 1

@@ -395,13 +395,15 @@ class WhatsAppTrainer:
             fp16=self.config.use_fp16,
             gradient_checkpointing=self.config.gradient_checkpointing,
             ## PROBABLY WINDOWS SPECIFIC. REMOVE FOR LINUX
-            #dataloader_pin_memory=False,  # Skip expensive cudaHostAlloc (Copilot suggestion, I do not know what I am doing)
-            #dataloader_num_workers=0,  # No multiprocessing overhead on Windows
+            # dataloader_pin_memory=False,  # Skip expensive cudaHostAlloc (Copilot suggestion, I do not know what I am doing)
+            # dataloader_num_workers=0,  # No multiprocessing overhead on Windows
             ##
-            resume_from_checkpoint=os.path.join(self.config.output_dir,"checkpoint-966"),  # Path to your checkpoint
+            resume_from_checkpoint=os.path.join(
+                self.config.output_dir, "checkpoint-966"
+            ),  # Path to your checkpoint
         )
 
-        #print(training_args)
+        # print(training_args)
 
         # Trainer
         trainer = Trainer(
@@ -480,7 +482,7 @@ if __name__ == "__main__":
     config = ModelConfig()
     trainer = WhatsAppTrainer(config)
 
-    # dataset = trainer.prepare_dataset()
+    dataset = trainer.prepare_dataset()
     # dataset.analyze()
 
     # trainer.train(profile_only=True)
@@ -493,11 +495,13 @@ if __name__ == "__main__":
 
     # print("len(labels):   ", len(sample["labels"]))
 
-    # datasetW = dataset.dataset
+    datasetW = dataset.dataset
 
-    # prompt, completion = datasetW[0]
-    # full_text = dataset._format_instruction(prompt, completion)
-    # print("\nFULL TEXT:\n", full_text)
+    prompt, completion = datasetW[0]
+    full_text = format_instruction(
+        prompt, completion, dataset.personas, for_training=True
+    )
+    print("\nFULL TEXT:\n", full_text)
 
-    trainer.train()
+    # trainer.train()
 #
