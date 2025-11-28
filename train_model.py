@@ -397,10 +397,6 @@ class WhatsAppTrainer:
             ## PROBABLY WINDOWS SPECIFIC. REMOVE FOR LINUX
             # dataloader_pin_memory=False,  # Skip expensive cudaHostAlloc (Copilot suggestion, I do not know what I am doing)
             # dataloader_num_workers=0,  # No multiprocessing overhead on Windows
-            ##
-            resume_from_checkpoint=os.path.join(
-                self.config.output_dir, "checkpoint-966"
-            ),  # Path to your checkpoint
         )
 
         # print(training_args)
