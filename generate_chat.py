@@ -43,6 +43,8 @@ class WhatsAppGenerator:
         self.temperature = temperature or Config.TEMPERATURE
         self.top_p = top_p or Config.TOP_P
         self.max_new_tokens = max_new_tokens or Config.MAX_NEW_TOKENS
+        self.repetition_penalty = Config.REPETITION_PENALTY
+        # self.no_repeat_ngram_size = Config.NO_REPEAT_NGRAM_SIZE
 
         logger.info(f"Using device: {self.device}")
         logger.info(f"Model path: {self.model_path}")
@@ -64,9 +66,8 @@ class WhatsAppGenerator:
         """Load the fine-tuned model."""
         logger.info(f"Loading model from {self.model_path}")
 
-        # Load tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(
-            self.model_path, trust_remote_code=True
+            self.model_path, padding_side="left"
         )
 
         if self.tokenizer.pad_token is None:
@@ -143,6 +144,7 @@ class WhatsAppGenerator:
         prompt = format_instruction(
             history_text, dummy_completion, self.personas, for_training=False
         )
+        prompt += f"\n[{target_persona}]:"
         # print(f"Formatted prompt:\n{prompt}\n{'-'*40}\n")
 
         # Tokenize
@@ -161,6 +163,8 @@ class WhatsAppGenerator:
                 max_new_tokens=max_new_tokens,
                 temperature=temperature,
                 top_p=top_p,
+                repetition_penalty=self.repetition_penalty,
+                # no_repeat_ngram_size=self.no_repeat_ngram_size,
                 do_sample=True,
                 pad_token_id=self.tokenizer.pad_token_id,
                 eos_token_id=self.tokenizer.eos_token_id,
@@ -174,10 +178,11 @@ class WhatsAppGenerator:
         response_marker = f"### Response from {target_persona}:"
         if response_marker in generated_text:
             response = generated_text.split(response_marker)[-1].strip()
+            print(f"Generated response: {response}\n\n")
 
             if len(response) == 0:
                 logger.warning("Generated response is empty after extraction.")
-                return "!! No generé respuesta"
+                return f"[{target_persona}]: !! No generé respuesta"
             return response
 
         else:
@@ -245,9 +250,10 @@ class WhatsAppGenerator:
             response = self.generate_response(conversation, next_persona)
 
             # Add to conversation
-            conversation.append(f"[{next_persona}]: {response}")
+            # conversation.append(f"[{next_persona}]: {response}")
+            conversation.append(f"{response}")
 
-            print(f"{next_persona}: {response}")
+            # print(f"{next_persona}: {response}")
 
         return conversation
 
@@ -256,14 +262,14 @@ class WhatsAppGenerator:
         return [p for p in self.personas.keys() if p != "SYSTEM"]
 
 
-def interactive_mode():
+def interactive_mode(model_path: Optional[str] = None):
     """Interactive chat mode."""
     print("=" * 60)
     print("WhatsApp Conversation Simulator")
     print("=" * 60)
 
     # Initialize generator
-    generator = WhatsAppGenerator()
+    generator = WhatsAppGenerator(model_path=model_path)
 
     # Show available personas
     personas = generator.get_available_personas()
@@ -274,7 +280,8 @@ def interactive_mode():
     print("1. Chat as yourself (others will respond)")
     print("2. Simulate autonomous conversation")
 
-    choice = input("\nEnter choice (1/2): ").strip()
+    # choice = input("\nEnter choice (1/2): ").strip()
+    choice = 2
 
     if choice == "1":
         # User participates
@@ -309,10 +316,24 @@ def interactive_mode():
 
     else:
         # Autonomous simulation
-        initial_msg = input("\nInitial message: ").strip()
-        initial_persona = random.choice(personas)
 
-        num_turns = int(input("Number of turns (default 10): ").strip() or "10")
+        # print(f"\nAvailable personas: {', '.join(personas)}")
+        # persona_input = input("Initial persona (press Enter for random): ").strip()
+        persona_input = "Sergio"
+
+        if persona_input and persona_input in personas:
+            initial_persona = persona_input
+        elif persona_input:
+            print(f"Warning: '{persona_input}' not found. Using random persona.")
+            initial_persona = random.choice(personas)
+        else:
+            initial_persona = random.choice(personas)
+
+        # initial_msg = input("\nInitial message: ").strip()
+        initial_msg = "Alguien algo?"
+
+        # num_turns = int(input("Number of turns (default 10): ").strip() or "10")
+        num_turns = 40
 
         print(f"\n[{initial_persona}]: {initial_msg}\n")
 

@@ -36,11 +36,15 @@ class WhatsAppDataset(Dataset):
         """Number of sliding windows available."""
         return len(self.messages) - self.window_size + 1
 
-    def _format_turn(self, msg) -> str:
+    def _format_turn(self, msg, omit_time=True) -> str:
         """Format one message as a WhatsApp-style line."""
         dt = msg["datetime"]
         ts = dt.split("T")[-1][:5] if "T" in dt else dt
-        return f"[{msg['persona_id']}] {ts}: {msg['text']}"
+
+        if omit_time:
+            return f"[{msg['persona_id']}]: {msg['text']}"
+        else:
+            return f"[{msg['persona_id']}] {ts}: {msg['text']}"
 
     def __getitem__(self, idx: int):
         """Return (prompt, completion) pair for index `idx`."""

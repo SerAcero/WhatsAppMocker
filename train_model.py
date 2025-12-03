@@ -483,11 +483,11 @@ if __name__ == "__main__":
 
     # trainer.train(profile_only=True)
 
-    # sample = dataset[3]
-    # print("input_ids:", sample["input_ids"][:])
-    # print("attention_mask:", sample["attention_mask"][:])
-    # print("labels:   ", sample["labels"][:])
-    # print("Decoded:", trainer.tokenizer.decode(sample["input_ids"][:]))
+    sample = dataset[3]
+    print("input_ids:", sample["input_ids"][:])
+    print("attention_mask:", sample["attention_mask"][:])
+    print("labels:   ", sample["labels"][:])
+    print("Decoded:", trainer.tokenizer.decode(sample["input_ids"][:]))
 
     # print("len(labels):   ", len(sample["labels"]))
 

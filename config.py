@@ -32,6 +32,10 @@ class BaseConfig:
     TOP_P = 0.9
     MAX_NEW_TOKENS = 100
 
+    # Anti-repetition
+    REPETITION_PENALTY = 1.15  # Penalizes ALL repeated tokens
+    # NO_REPEAT_NGRAM_SIZE = 3  # Blocks repeated 3-word sequences
+
     # === Conversation Settings ===
     MIN_MESSAGES_FOR_PERSONA = 5
     DEFAULT_CONVERSATION_TURNS = 10
@@ -42,15 +46,15 @@ class BaseConfig:
 class GPT2Config(BaseConfig):
     """GPT-2 configuration - lightweight, CPU-friendly - optimized for GTX 960M"""
 
-    BASE_MODEL = "gpt2"
-    MODEL_OUTPUT_DIR = f"{BaseConfig.MODEL_DIR}/gpt2"
+    BASE_MODEL = "DeepESP/gpt2-spanish"
+    MODEL_OUTPUT_DIR = f"{BaseConfig.MODEL_DIR}/DeepESP/gpt2-spanish"
 
     if is_colab():
         # Training (for Colab T4)
-        NUM_EPOCHS = 7
+        NUM_EPOCHS = 5  # 7
         BATCH_SIZE = 32
         GRADIENT_ACCUMULATION_STEPS = 2
-        LEARNING_RATE = 8e-4
+        LEARNING_RATE = 5e-4  # 8e-4
         LR_SCHEDULER_TYPE = "cosine"
         WARMUP_RATIO = 0.05
         MAX_SEQ_LENGTH = 128 * 3
@@ -58,10 +62,11 @@ class GPT2Config(BaseConfig):
         GRADIENT_CHECKPOINTING = True
 
         # LoRA (bigger capacity for Colab)
-        LORA_R = 32
-        LORA_ALPHA = 64
-        LORA_DROPOUT = 0.05
-        LORA_TARGET_MODULES = ["c_attn", "c_proj", "c_fc"]
+        LORA_R = 24  # 32
+        LORA_ALPHA = 48  # 64
+        LORA_DROPOUT = 0.05  # 0.1
+        # LORA_TARGET_MODULES = ["c_attn", "c_proj", "c_fc"]
+        LORA_TARGET_MODULES = ["c_attn", "c_proj"]
     else:
         # Training (auto-adjust for Colab T4 vs local GTX 960M)
         NUM_EPOCHS = 1

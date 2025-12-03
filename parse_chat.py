@@ -162,10 +162,33 @@ def analyze_personas(messages):
         "medien",
         "ausgeschlossen",
         "omitted>",
+        "nachricht",
+        "wurde",
+        "live-standort",
+        "wird",
+        "geteilt.",
         "<media",
         "omitted",  # English exports
         "omitido>",
         "<multimedia",  # Spanish exports
+    }
+    common_words_not_counted = {
+        "pero",
+        "para",
+        "tengo",
+        "estoy",
+        "está",
+        "como",
+        "alguien",
+        "quien",
+        "cuando",
+        "mañana",
+        "esta",
+        "esto",
+        "este",
+        "creo",
+        "pues",
+        "algo",
     }
 
     for sender, texts in by_sender.items():
@@ -187,8 +210,11 @@ def analyze_personas(messages):
         word_freq = Counter(
             w
             for w in all_words
-            if len(w) > 3 and w not in STOPWORDS  # Add stopwords filter
+            if len(w) > 3
+            and w not in STOPWORDS
+            and w not in common_words_not_counted  # Add stopwords filter
         )
+        print(word_freq.most_common(10))
         common_words = [w for w, _ in word_freq.most_common(10)]
 
         if len(texts) < 100:
